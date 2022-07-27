@@ -45,15 +45,15 @@ class Application(tk.Frame):
         self.button_open.grid(column=0, row=1)
         self.button_open.configure(command=self.loadImage)
 
-        #Canvas
+        # Canvas original image
         self.ori_img_canvas = tk.Canvas(self)
-        self.ori_img_canvas.configure(width=self.img_width, height=self.img_height, bg='gray')
+        self.ori_img_canvas.configure(width=self.img_width, height=self.img_height)
         self.ori_img_canvas.grid(column=1, row=1)
         self.ori_img_canvas.grid(padx=20, pady=50)
 
-        #Canvas
+        # Canvas annoteted image
         self.ann_img_canvas = tk.Canvas(self)
-        self.ann_img_canvas.configure(width=self.img_width, height=self.img_height, bg='gray')
+        self.ann_img_canvas.configure(width=self.img_width, height=self.img_height)
         self.ann_img_canvas.grid(column=2, row=1)
         self.ann_img_canvas.grid(padx=20, pady=50)
 
@@ -73,27 +73,40 @@ class Application(tk.Frame):
         ann_img_filepath = ann_img_root + ann_img_filepath[2:]
         print("ann : ", ann_img_filepath)
 
-        ori_img = self.openImage(ori_img_filepath)
-        ann_img = self.openImage(ann_img_filepath)
-        self.ori_img_canvas.create_image(self.img_width/2, self.img_height/2, image=ori_img)
-        self.ann_img_canvas.create_image(self.img_width/2, self.img_height/2, image=ann_img)
-
-    def openImage(self, img_path):
-        self.image_bgr = cv2.imread(img_path)
-        self.height, self.width = self.image_bgr.shape[:2]
-        print(self.height, self.width)
-        if self.width > self.height:
-            self.new_size = (self.img_width, self.img_height)
+        # ori_img
+        self.ori_img_bgr = cv2.imread(ori_img_filepath)
+        self.ori_img_height, self.ori_img_width = self.ori_img_bgr.shape[:2]
+        print(self.ori_img_height, self.ori_img_width)
+        if self.ori_img_width > self.ori_img_height:
+            self.ori_new_size = (self.img_width, self.img_height)
         else:
-            self.new_size = (280,500)
+            self.ori_new_size = (280,500)
 
-        self.image_bgr_resize = cv2.resize(self.image_bgr, self.new_size, interpolation=cv2.INTER_AREA)
-        self.image_rgb = cv2.cvtColor( self.image_bgr_resize, cv2.COLOR_BGR2RGB )  # imreadはBGRなのでRGBに変換
+        self.ori_img_bgr_resize = cv2.resize(self.ori_img_bgr, self.ori_new_size, interpolation=cv2.INTER_AREA)
+        self.ori_img_rgb = cv2.cvtColor( self.ori_img_bgr_resize, cv2.COLOR_BGR2RGB )  # imreadはBGRなのでRGBに変換
 
-       # self.image_rgb = cv2.cvtColor(self.image_bgr, cv2.COLOR_BGR2RGB) # imreadはBGRなのでRGBに変換
-        self.image_PIL = Image.fromarray(self.image_rgb) # RGBからPILフォーマットへ変換
-        self.image_tk = ImageTk.PhotoImage(self.image_PIL) # ImageTkフォーマットへ変換
-        return self.image_tk
+       # self.ori_img_rgb = cv2.cvtColor(self.ori_img_bgr, cv2.COLOR_BGR2RGB) # imreadはBGRなのでRGBに変換
+        self.ori_img_PIL = Image.fromarray(self.ori_img_rgb) # RGBからPILフォーマットへ変換
+        self.ori_img_tk = ImageTk.PhotoImage(self.ori_img_PIL) # ImageTkフォーマットへ変換
+        self.ori_img_canvas.create_image(self.img_width/2, self.img_height/2, image=self.ori_img_tk)
+
+        # ann_img
+        self.ann_img_bgr = cv2.imread(ann_img_filepath)
+        self.ann_img_height, self.ann_img_width = self.ann_img_bgr.shape[:2]
+        print(self.ann_img_height, self.ann_img_width)
+        if self.ann_img_width > self.ann_img_height:
+            self.ann_new_size = (self.img_width, self.img_height)
+        else:
+            self.ann_new_size = (280,500)
+
+        self.ann_img_bgr_resize = cv2.resize(self.ann_img_bgr, self.ann_new_size, interpolation=cv2.INTER_AREA)
+        self.ann_img_rgb = cv2.cvtColor( self.ann_img_bgr_resize, cv2.COLOR_BGR2RGB )  # imreadはBGRなのでRGBに変換
+        
+        # self.ann_img_rgb = cv2.cvtColor(self.ann_img_bgr, cv2.COLOR_BGR2RGB) # imreadはBGRなのでRGBに変換
+        self.ann_img_PIL = Image.fromarray(self.ann_img_rgb) # RGBからPILフォーマットへ変換
+        self.ann_img_tk = ImageTk.PhotoImage(self.ann_img_PIL) # ImageTkフォーマットへ変換
+        self.ann_img_canvas.create_image(self.img_width/2, self.img_height/2, image=self.ann_img_tk)
+        self.ann_img_canvas.create_image(self.img_width/2, self.img_height/2, image=self.ann_img_tk)
 
 def read_json(j_file):
     with open(j_file, 'r') as f:
