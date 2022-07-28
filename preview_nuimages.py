@@ -1,12 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
 
-import sys
-import os
 import shutil
 from tkinter import *
-from tkinter import messagebox,filedialog
-import numpy as np
+from tkinter import filedialog
 from PIL import Image, ImageTk
 import cv2
 import json
@@ -38,8 +35,8 @@ class Application(tk.Frame):
         self.ann_token_input.grid(column=0, row=0)
         self.ann_token_input.grid(padx=20, pady=35)
         # ann_token input textbox
-        self.ann_token = ttk.Entry(self.ann_token_input, width=50)
-        self.ann_token.grid(column=0, row=0)
+        self.ann_token_box = ttk.Entry(self.ann_token_input, width=50)
+        self.ann_token_box.grid(column=0, row=0)
         #File open and Load Image
         self.button_open = ttk.Button(self.ann_token_input)
         self.button_open.configure(text = 'Load')
@@ -47,10 +44,18 @@ class Application(tk.Frame):
         self.button_open.configure(command=self.loadInstance)
 
         # Canvas annoteted info
-        self.ori_img_canvas = tk.Canvas(self)
-        self.ori_img_canvas.configure(width=550, height=150, bg='gray')
-        self.ori_img_canvas.grid(column=1, row=0)
-        self.ori_img_canvas.grid(padx=35, pady=10)
+        self.info_canvas = tk.Canvas(self)
+        self.info_canvas.configure(width=550, height=100, bg='snow')
+        self.info_canvas.grid(column=1, row=0)
+        self.info_canvas.grid(padx=35, pady=10)
+        self.info_canvas.create_text(10, 30, text="Mask area\t: ", font=("Ricty", 24), anchor="nw", tag="maskarea")  # 左上原点
+        self.info_canvas.create_text(10, 60, text="BBox height\t: ", font=("Ricty", 24), anchor="nw", tag="bboxheight")  # 左上原点
+        # self.maskarea = tk.Text(self.info_canvas, state=tk.DISABLED)
+        # self.maskarea.grid(column=0, row=0)
+        # self.maskarea.insert('1.0', 'Mask area : ')
+        # self.bboxheight = tk.Text(self.info_canvas, state=tk.DISABLED)
+        # self.bboxheight.grid(column=0, row=1)
+        # self.bboxheight.insert('1.0', 'BBox height\t: ')
 
         # Canvas original image
         self.ori_img_frame = ttk.LabelFrame(self)
@@ -90,7 +95,7 @@ class Application(tk.Frame):
     def loadInstance(self):
 
         #self.folder_name = filedialog.askdirectory()
-        self.ann_token = self.ann_token.get()
+        self.ann_token = self.ann_token_box.get()
         #print(self.folder_name)
         # print(self.ann_token)
 
@@ -101,11 +106,19 @@ class Application(tk.Frame):
 
             self.ann_img_filepath = ann_datas[self.ann_token]['ann_img']
             self.ann_img_filepath = ann_img_root + self.ann_img_filepath[2:]
+            self.ann_maskarea = ann_datas[self.ann_token]['mask_area']
+            self.ann_bboxheight = ann_datas[self.ann_token]['bbox_height']
             print("ann : ", self.ann_img_filepath)
         except KeyError:
             print(f"The token ({self.ann_token}) is not defined.")
         except Exception as e:
             print(self.ann_token, e)
+
+        # Update info
+        self.info_canvas.delete("maskarea")
+        self.info_canvas.delete("bboxheight")
+        self.info_canvas.create_text(10, 30, text=f"Mask area\t: {self.ann_maskarea}", font=("Ricty", 24), anchor="nw", tag="maskarea")  # 左上原点
+        self.info_canvas.create_text(10, 60, text=f"BBox height\t: {self.ann_bboxheight}", font=("Ricty", 24), anchor="nw", tag="bboxheight")  # 左上原点
 
         # ori_img
         self.ori_img_bgr = cv2.imread(self.ori_img_filepath)
